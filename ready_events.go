@@ -3,6 +3,7 @@ package pkg
 import (
 	"errors"
 	"reflect"
+	"sync"
 	"time"
 )
 
@@ -26,17 +27,22 @@ type ReadyEvents interface {
 func NewReadyEvents(d time.Duration) *readyEvents {
 	return &readyEvents{
 		timeout: d,
+		ready:   make(chan interface{}),
 	}
 }
 
 type readyEvents struct {
 	events  []interface{}
 	ready   chan interface{}
-	done    chan int
 	timeout time.Duration
+
+	sync.RWMutex
 }
 
 func (r *readyEvents) Register(event interface{}) error {
+	r.Lock()
+	defer r.Unlock()
+
 	r.events = append(r.events, event)
 
 	// noop
@@ -51,6 +57,10 @@ func (r *readyEvents) Ready(event interface{}) {
 // Wait blocks until all events have occured or when
 // the timeout is hit.
 func (r *readyEvents) Wait() error {
+	if len(r.events) == 0 {
+		return nil
+	}
+
 	for {
 		select {
 		case event := <-r.ready:
@@ -61,15 +71,10 @@ func (r *readyEvents) Wait() error {
 			}
 
 			if len(r.events) == 0 {
-				r.done <- 1
-			}
-		case done := <-r.done:
-			if done != 0 {
-				return ErrReadyEventsDone
+				return nil
 			}
 
-			return nil
-		case <-time.After(r.timeout):
+		case <-time.After(time.Second * 3):
 			return ErrReadyEventsTimeout
 		}
 	}
