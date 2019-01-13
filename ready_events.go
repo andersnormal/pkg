@@ -26,11 +26,12 @@ type ReadyEvent struct{}
 type ReadyEvents interface {
 	// Register is registering an event to occur upon readyness
 	// of an app.
-	Register(event interface{}) error
+	Register(event interface{}) func()
 	// Wait blocks until all events have occured or when
 	// the timeout is hit.
 	Wait() error
 	// Ready is submitting an event to be done
+	Ready(event interface{})
 }
 
 //  NewReadyEvents returns a new ready events factory
@@ -50,14 +51,14 @@ type readyEvents struct {
 }
 
 // Register is pushing a new event to the splice of ready events
-func (r *readyEvents) Register(event interface{}) error {
+func (r *readyEvents) Register(event interface{}) func() {
 	r.Lock()
 	defer r.Unlock()
 
 	r.events = append(r.events, event)
 
 	// noop
-	return nil
+	return func() { r.Ready(event) }
 }
 
 // Ready allows to send in an event to be marked as ready.
