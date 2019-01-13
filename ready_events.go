@@ -14,6 +14,15 @@ var (
 	ErrReadyEventsDone    = errors.New("pkg: ready events not done")
 )
 
+// ReadyEvent is an event that should be done
+// before proceeding.
+//
+//	type CustomReadyEvent  {
+//		*ReadyEvent
+//	}
+//
+type ReadyEvent struct{}
+
 type ReadyEvents interface {
 	// Register is registering an event to occur upon readyness
 	// of an app.
@@ -24,6 +33,7 @@ type ReadyEvents interface {
 	// Ready is submitting an event to be done
 }
 
+//  NewReadyEvents returns a new ready events factory
 func NewReadyEvents(d time.Duration) *readyEvents {
 	return &readyEvents{
 		timeout: d,
@@ -39,6 +49,7 @@ type readyEvents struct {
 	sync.RWMutex
 }
 
+// Register is pushing a new event to the splice of ready events
 func (r *readyEvents) Register(event interface{}) error {
 	r.Lock()
 	defer r.Unlock()
