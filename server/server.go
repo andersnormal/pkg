@@ -121,6 +121,20 @@ func (s *server) Wait() error {
 	}
 }
 
+// WithName ...
+func WithName(name string) func(o *Opts) {
+	return func(o *Opts) {
+		o.Name = name
+	}
+}
+
+// WithEnv ...
+func WithEnv(env string) func(o *Opts) {
+	return func(o *Opts) {
+		o.Env = env
+	}
+}
+
 // Listener is the interface to a listener,
 // so starting and shutdown of a listener,
 // or any routine.

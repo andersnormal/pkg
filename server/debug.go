@@ -13,9 +13,6 @@ type debug struct {
 	mux     *http.ServeMux
 	handler *http.Server
 
-	promHandler http.Handler
-	proof       bool
-
 	routes map[string]http.Handler
 }
 
@@ -26,15 +23,13 @@ type DebugOpt func(*DebugOpts)
 type DebugOpts struct {
 	Addr string
 
-	Proof       bool
-	PromHandler http.Handler
-
 	Routes map[string]http.Handler
 }
 
 // NewDebugListener ...
 func NewDebugListener(opts ...DebugOpt) Listener {
 	options := &DebugOpts{}
+	options.Routes = make(map[string]http.Handler)
 
 	d := new(debug)
 	d.opts = options
@@ -78,8 +73,8 @@ func WithStatusAddr(addr string) func(o *DebugOpts) {
 	}
 }
 
-// WithProof ...
-func WithProof() func(o *DebugOpts) {
+// WithPprof ...
+func WithPprof() func(o *DebugOpts) {
 	return func(o *DebugOpts) {
 		o.Routes["/debug/pprof/trace"] = http.HandlerFunc(pprof.Trace)
 		o.Routes["/debug/pprof/"] = http.HandlerFunc(pprof.Index)
