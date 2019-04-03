@@ -9,11 +9,14 @@ import (
 var _ Listener = (*debug)(nil)
 
 type debug struct {
-	opts        *DebugOpts
-	mux         *http.ServeMux
-	handler     *http.Server
+	opts    *DebugOpts
+	mux     *http.ServeMux
+	handler *http.Server
+
 	promHandler http.Handler
 	proof       bool
+
+	routes map[string]http.Handler
 }
 
 // DebugOpt ...
@@ -25,6 +28,8 @@ type DebugOpts struct {
 
 	Proof       bool
 	PromHandler http.Handler
+
+	Routes map[string]http.Handler
 }
 
 // NewDebugListener ...
@@ -33,6 +38,8 @@ func NewDebugListener(opts ...DebugOpt) Listener {
 
 	d := new(debug)
 	d.opts = options
+
+	// create the mus
 	d.mux = http.NewServeMux()
 
 	configureDebug(d, opts...)
@@ -74,28 +81,24 @@ func WithStatusAddr(addr string) func(o *DebugOpts) {
 // WithProof ...
 func WithProof() func(o *DebugOpts) {
 	return func(o *DebugOpts) {
-		o.Proof = true
+		o.Routes["/debug/pprof/trace"] = http.HandlerFunc(pprof.Trace)
+		o.Routes["/debug/pprof/"] = http.HandlerFunc(pprof.Index)
+		o.Routes["/debug/pprof/cmdline"] = http.HandlerFunc(pprof.Cmdline)
+		o.Routes["/debug/pprof/profile"] = http.HandlerFunc(pprof.Profile)
+		o.Routes["/debug/pprof/symbol"] = http.HandlerFunc(pprof.Symbol)
 	}
 }
 
 // WithPrometheusHandler is adding this prometheus http handler as an option.
 func WithPrometheusHandler(handler http.Handler) func(o *DebugOpts) {
 	return func(o *DebugOpts) {
-		o.PromHandler = handler
+		o.Routes["/debug/metrics"] = handler
 	}
 }
 
 func configureMux(d *debug) error {
-	if d.proof {
-		d.mux.Handle("/debug/pprof/", http.HandlerFunc(pprof.Index))
-		d.mux.Handle("/debug/pprof/cmdline", http.HandlerFunc(pprof.Cmdline))
-		d.mux.Handle("/debug/pprof/profile", http.HandlerFunc(pprof.Profile))
-		d.mux.Handle("/debug/pprof/symbol", http.HandlerFunc(pprof.Symbol))
-		d.mux.Handle("/debug/pprof/trace", http.HandlerFunc(pprof.Trace))
-	}
-
-	if d.promHandler != nil {
-		d.mux.Handle("/debug/metrics", d.promHandler)
+	for route, handler := range d.routes {
+		d.mux.Handle(route, handler)
 	}
 
 	return nil
@@ -106,8 +109,7 @@ func configureDebug(d *debug, opts ...DebugOpt) error {
 		o(d.opts)
 	}
 
-	d.proof = d.opts.Proof
-	d.promHandler = d.opts.PromHandler
+	d.routes = d.opts.Routes
 
 	return nil
 }
