@@ -82,7 +82,7 @@ func (s *server) Listen(listener Listener) {
 	s.listeners[listener] = true
 	g := s.errGroup
 
-	g.Go(listener.Start())
+	g.Go(listener.Start(s.errCtx))
 }
 
 // Env ...
@@ -139,7 +139,7 @@ func WithEnv(env string) func(o *Opts) {
 // so starting and shutdown of a listener,
 // or any routine.
 type Listener interface {
-	Start() func() error
+	Start(ctx context.Context) func() error
 	Stop() error
 }
 

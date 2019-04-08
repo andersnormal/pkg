@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"net/http"
 
 	"net/http/pprof"
@@ -48,7 +49,7 @@ func NewDebugListener(opts ...DebugOpt) Listener {
 }
 
 // Start ...
-func (d *debug) Start() func() error {
+func (d *debug) Start(ctx context.Context) func() error {
 	return func() error {
 
 		err := d.handler.ListenAndServe()
