@@ -49,8 +49,9 @@ func NewDebugListener(opts ...DebugOpt) Listener {
 }
 
 // Start ...
-func (d *debug) Start(ctx context.Context) func() error {
+func (d *debug) Start(ctx context.Context, ready func()) func() error {
 	return func() error {
+		ready()
 
 		err := d.handler.ListenAndServe()
 

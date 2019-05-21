@@ -13,7 +13,7 @@ import (
 // Server is the interface to the server
 type Server interface {
 	// Run is running a new routine
-	Listen(listener Listener)
+	Listen(listener Listener, ready bool)
 	// Name
 	Name() string
 	// Env
@@ -50,7 +50,8 @@ type server struct {
 
 	listeners map[Listener]bool
 
-	sys chan os.Signal
+	ready chan bool
+	sys   chan os.Signal
 
 	opts *Opts
 }
@@ -66,6 +67,7 @@ func NewServer(ctx context.Context, opts ...Opt) Server {
 	s.cancel = cancel
 	s.errGroup, s.errCtx = errgroup.WithContext(ctx)
 	s.listeners = make(listeners)
+	s.ready = make(chan bool)
 
 	configure(s, opts...)
 	configureSignals(s)
@@ -74,15 +76,19 @@ func NewServer(ctx context.Context, opts ...Opt) Server {
 }
 
 // Listen ...
-func (s *server) Listen(listener Listener) {
+func (s *server) Listen(listener Listener, ready bool) {
 	if _, found := s.listeners[listener]; found {
 		return
 	}
 
-	s.listeners[listener] = true
+	s.listeners[listener] = false
 	g := s.errGroup
 
-	g.Go(listener.Start(s.errCtx))
+	g.Go(listener.Start(s.errCtx, func() { s.ready <- true }))
+
+	if ready {
+		<-s.ready
+	}
 }
 
 // Env ...
@@ -139,7 +145,7 @@ func WithEnv(env string) func(o *Opts) {
 // so starting and shutdown of a listener,
 // or any routine.
 type Listener interface {
-	Start(ctx context.Context) func() error
+	Start(ctx context.Context, ready func()) func() error
 	Stop() error
 }
 
