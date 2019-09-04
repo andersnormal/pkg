@@ -154,7 +154,10 @@ func (s *server) Wait() error {
 
 		// this blocks until ready is called
 		if ready {
-			<-s.ready
+			select {
+			case <-s.ready:
+			case <-s.ctx.Done():
+			}
 		}
 	}
 
