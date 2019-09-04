@@ -2,12 +2,38 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 	"sync"
-	"syscall"
 	"time"
+
+	"github.com/andersnormal/pkg/config"
 )
+
+// Env ...
+type Env string
+
+const (
+	Development Env = "development"
+	Production  Env = "production"
+)
+
+// ServerError ...
+type ServerError struct {
+	Err error
+}
+
+// Error ...
+func (s *ServerError) Error() string { return fmt.Sprintf("server error: %s", s.Err) }
+
+// Unwrap ...
+func (s *ServerError) Unwrap() error { return s.Err }
+
+// NewServerError ...
+func NewServerError(err error) *ServerError {
+	return &ServerError{Err: err}
+}
 
 // Server is the interface to be implemented
 // to run the server.
@@ -19,15 +45,23 @@ import (
 //		panic(err)
 //	}
 type Server interface {
-	// Run is running a new routine
+	// Run is running a new go routine
 	Listen(listener Listener, ready bool)
 	// Name
 	Name() string
 	// Env
-	Env() string
+	Env() Env
 	// Waits for the server to fail,
-	// or gracefully shutdown if called
+	// or gracefully shutdown if context is canceled
 	Wait() error
+}
+
+// Listener is the interface to a listener,
+// so starting and shutdown of a listener,
+// or any routine.
+type Listener interface {
+	// Start is being called on the listener
+	Start(ctx context.Context, ready func()) func() error
 }
 
 // Opt ...
@@ -35,16 +69,9 @@ type Opt func(*Opts)
 
 // Opts ...
 type Opts struct {
-	// Name
-	Name string
-	// Env
-	Env string
-	// ReloadSignal
-	ReloadSignal syscall.Signal
-	// TermSignal
-	TermSignal syscall.Signal
-	// KillSignal
-	KillSignal syscall.Signal
+	Name   string
+	Env    Env
+	Config *config.Config
 }
 
 type listeners map[Listener]bool
@@ -85,15 +112,17 @@ func Name(name string) func(o *Opts) {
 	}
 }
 
-// Env ...
-func Env(env string) func(o *Opts) {
+// WithConfig ...
+func WithConfig(cfg *config.Config) func(o *Opts) {
 	return func(o *Opts) {
-		o.Env = env
+		o.Config = cfg
 	}
 }
 
 func newServer(ctx context.Context, opts ...Opt) *server {
-	options := &Opts{}
+	options := new(Opts)
+	options.Config = config.New()
+	options.Env = Development
 
 	s := new(server)
 	s.opts = options
@@ -106,8 +135,6 @@ func newServer(ctx context.Context, opts ...Opt) *server {
 
 	configure(s, opts...)
 	configureSignals(s)
-
-	s.Env()
 
 	return s
 }
@@ -124,7 +151,7 @@ func (s *server) Listen(listener Listener, ready bool) {
 }
 
 // Env ...
-func (s *server) Env() string {
+func (s *server) Env() Env {
 	return s.opts.Env
 }
 
@@ -140,14 +167,17 @@ func (s *server) Wait() error {
 	defer ticker.Stop()
 
 OUTTER:
-	// start all listeners
+	// start all listeners in order
 	for l, ready := range s.listeners {
 		fn := func() {
 			r := ready
 
-			if r {
-				s.ready <- true
-			}
+			var readyOnce sync.Once
+			readyOnce.Do(func() {
+				if r {
+					s.ready <- true
+				}
+			})
 		}
 
 		// schedule to routines
@@ -174,7 +204,7 @@ OUTTER:
 			s.cancel()
 		case <-s.ctx.Done():
 			if err := s.ctx.Err(); err != nil {
-				return err
+				return NewServerError(s.err)
 			}
 
 			return nil
@@ -185,7 +215,7 @@ OUTTER:
 func (s *server) run(f func() error) {
 	s.wg.Add(1)
 
-	go func() {
+	fn := func() {
 		defer s.wg.Done()
 
 		if err := f(); err != nil {
@@ -196,31 +226,20 @@ func (s *server) run(f func() error) {
 				}
 			})
 		}
-	}()
-}
+	}
 
-// Listener is the interface to a listener,
-// so starting and shutdown of a listener,
-// or any routine.
-type Listener interface {
-	// Start is being called on the listener
-	Start(ctx context.Context, ready func()) func() error
+	go fn()
 }
 
 func configureSignals(s *server) {
 	s.sys = make(chan os.Signal, 1)
-
-	signal.Notify(s.sys, s.opts.ReloadSignal, s.opts.KillSignal, s.opts.TermSignal)
+	signal.Notify(s.sys, s.opts.Config.TermSignal)
 }
 
 func configure(s *server, opts ...Opt) error {
 	for _, o := range opts {
 		o(s.opts)
 	}
-
-	s.opts.TermSignal = syscall.SIGTERM
-	s.opts.ReloadSignal = syscall.SIGHUP
-	s.opts.KillSignal = syscall.SIGINT
 
 	return nil
 }
