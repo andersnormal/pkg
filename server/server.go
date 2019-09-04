@@ -139,6 +139,7 @@ func (s *server) Wait() error {
 	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
 
+OUTTER:
 	// start all listeners
 	for l, ready := range s.listeners {
 		fn := func() {
@@ -156,7 +157,9 @@ func (s *server) Wait() error {
 		if ready {
 			select {
 			case <-s.ready:
+				continue
 			case <-s.ctx.Done():
+				break OUTTER
 			}
 		}
 	}
