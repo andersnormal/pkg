@@ -17,12 +17,14 @@ const (
 	DefaultKillSignal = syscall.SIGINT
 )
 
-// Env ...
+// Env is a string that identifies an environment.
 type Env string
 
 const (
+	// Development symbolizes a development environment this program runs in.
 	Development Env = "development"
-	Production  Env = "production"
+	// Production symbolizes a production environment this program runs in.
+	Production Env = "production"
 )
 
 // Opts ...
@@ -41,10 +43,10 @@ type Opts struct {
 	Env Env
 }
 
-// Opt ...
+// Opt is an option
 type Opt func(*Opts)
 
-// New ...
+// New returns a new instance of the options.
 func New(opts ...Opt) *Opts {
 	o := NewDefaultOpts()
 	o.Configure(opts...)
@@ -52,7 +54,7 @@ func New(opts ...Opt) *Opts {
 	return o
 }
 
-// DefaultOpts ...
+// NewDefaultOpts returns options with a default configuration.
 func NewDefaultOpts() *Opts {
 	return &Opts{
 		Verbose:      DefaultVerbose,
@@ -63,21 +65,21 @@ func NewDefaultOpts() *Opts {
 	}
 }
 
-// WithLogger ...
+// WithLogger is setting a logger for options
 func WithLogger(logger *zap.Logger) Opt {
 	return func(opts *Opts) {
 		opts.Logger = logger
 	}
 }
 
-// WithEnv ...
+// WithEnv configures a new environment.
 func WithEnv(env Env) Opt {
 	return func(opts *Opts) {
 		opts.Env = env
 	}
 }
 
-// Configure ...
+// Configure os configuring the options.
 func (s *Opts) Configure(opts ...Opt) {
 	for _, o := range opts {
 		o(s)

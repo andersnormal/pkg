@@ -11,7 +11,8 @@ import (
 	o "github.com/andersnormal/pkg/opts"
 )
 
-// ReadyFunc
+// ReadyFunc is the function that is called by Listener to signal
+// that it is ready and the next Listener can be called.
 type ReadyFunc func()
 
 // ServerError ...
@@ -154,7 +155,7 @@ OUTTER:
 		select {
 		case <-ticker.C:
 		case <-s.sys:
-			// if there is sys interupt
+			// if there is sys interrupt
 			// cancel the context of the routines
 			s.cancel()
 		case <-s.ctx.Done():
