@@ -87,20 +87,16 @@ func WithPrometheusHandler(handler http.Handler) func(o *DebugOpts) {
 	}
 }
 
-func configureMux(d *debug) error {
+func configureMux(d *debug) {
 	for route, handler := range d.routes {
 		d.mux.Handle(route, handler)
 	}
-
-	return nil
 }
 
-func configureDebug(d *debug, opts ...DebugOpt) error {
+func configureDebug(d *debug, opts ...DebugOpt) {
 	for _, o := range opts {
 		o(d.opts)
 	}
 
 	d.routes = d.opts.Routes
-
-	return nil
 }

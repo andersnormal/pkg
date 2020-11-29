@@ -21,11 +21,11 @@ func TestConfig_New(t *testing.T) {
 
 func TestConfig_WithLogger(t *testing.T) {
 	logger, err := zap.NewProduction()
-	defer logger.Sync()
 	assert.NoError(t, err)
 
 	o := New(WithLogger(logger))
 	assert.NotNil(t, o.Logger)
+	assert.NoError(t, logger.Sync())
 }
 
 func TestConfig_WithName(t *testing.T) {

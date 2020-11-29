@@ -78,10 +78,8 @@ func WithEnv(env Env) Opt {
 }
 
 // Configure ...
-func (s *Opts) Configure(opts ...Opt) error {
+func (s *Opts) Configure(opts ...Opt) {
 	for _, o := range opts {
 		o(s)
 	}
-
-	return nil
 }

@@ -20,7 +20,7 @@ jobs:
       - name: Setup go
         uses: actions/setup-go@v2
 
-      - name: static checks
+      - name: Static Check
         run: GOBIN=$PWD/bin go install honnef.co/go/tools/cmd/staticcheck && ./bin/staticcheck ./...
 
       - name: Run Linting
