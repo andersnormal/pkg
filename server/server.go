@@ -8,16 +8,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/andersnormal/pkg/config"
+	o "github.com/andersnormal/pkg/opts"
 )
 
-// Env ...
-type Env string
-
-const (
-	Development Env = "development"
-	Production  Env = "production"
-)
+// ReadyFunc
+type ReadyFunc func()
 
 // ServerError ...
 type ServerError struct {
@@ -47,10 +42,6 @@ func NewServerError(err error) *ServerError {
 type Server interface {
 	// Run is running a new go routine
 	Listen(listener Listener, ready bool)
-	// Name
-	Name() string
-	// Env
-	Env() Env
 	// Waits for the server to fail,
 	// or gracefully shutdown if context is canceled
 	Wait() error
@@ -61,17 +52,7 @@ type Server interface {
 // or any routine.
 type Listener interface {
 	// Start is being called on the listener
-	Start(ctx context.Context, ready func()) func() error
-}
-
-// Opt ...
-type Opt func(*Opts)
-
-// Opts ...
-type Opts struct {
-	Name   string
-	Env    Env
-	Config *config.Config
+	Start(context.Context, ReadyFunc) func() error
 }
 
 type listeners map[Listener]bool
@@ -90,11 +71,11 @@ type server struct {
 	ready chan bool
 	sys   chan os.Signal
 
-	opts *Opts
+	opts *o.Opts
 }
 
 // WithContext ...
-func WithContext(ctx context.Context, opts ...Opt) (Server, context.Context) {
+func WithContext(ctx context.Context, opts ...o.Opt) (Server, context.Context) {
 	ctx, cancel := context.WithCancel(ctx)
 
 	// new server
@@ -105,35 +86,19 @@ func WithContext(ctx context.Context, opts ...Opt) (Server, context.Context) {
 	return s, ctx
 }
 
-// Name ...
-func Name(name string) func(o *Opts) {
-	return func(o *Opts) {
-		o.Name = name
-	}
-}
-
-// WithConfig ...
-func WithConfig(cfg *config.Config) func(o *Opts) {
-	return func(o *Opts) {
-		o.Config = cfg
-	}
-}
-
-func newServer(ctx context.Context, opts ...Opt) *server {
-	options := new(Opts)
-	options.Config = config.New()
-	options.Env = Development
+func newServer(ctx context.Context, opts ...o.Opt) *server {
+	options := o.New(opts...)
 
 	s := new(server)
 	s.opts = options
 
 	ctx, cancel := context.WithCancel(ctx)
 	s.cancel = cancel
+	s.ctx = ctx
 
 	s.listeners = make(listeners)
 	s.ready = make(chan bool)
 
-	configure(s, opts...)
 	configureSignals(s)
 
 	return s
@@ -148,16 +113,6 @@ func (s *server) Listen(listener Listener, ready bool) {
 
 	// add to listeners
 	s.listeners[listener] = ready
-}
-
-// Env ...
-func (s *server) Env() Env {
-	return s.opts.Env
-}
-
-// Name ...
-func (s *server) Name() string {
-	return s.opts.Name
 }
 
 // Wait ...
@@ -233,13 +188,5 @@ func (s *server) run(f func() error) {
 
 func configureSignals(s *server) {
 	s.sys = make(chan os.Signal, 1)
-	signal.Notify(s.sys, s.opts.Config.TermSignal)
-}
-
-func configure(s *server, opts ...Opt) error {
-	for _, o := range opts {
-		o(s.opts)
-	}
-
-	return nil
+	signal.Notify(s.sys, s.opts.TermSignal)
 }

@@ -49,7 +49,7 @@ func NewDebugListener(opts ...DebugOpt) Listener {
 }
 
 // Start ...
-func (d *debug) Start(ctx context.Context, ready func()) func() error {
+func (d *debug) Start(ctx context.Context, ready ReadyFunc) func() error {
 	return func() error {
 		// noop, call to be ready
 		ready()

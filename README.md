@@ -1,6 +1,6 @@
 # Pkg
 
-[![Build Status](https://travis-ci.org/andersnormal/pkg.svg?branch=master)](https://travis-ci.org/andersnormal/pkg)
+![Github Action](https://github.com/andersnormal/pkg/workflows/main/badge.svg)
 [![Go Report Card](https://goreportcard.com/badge/github.com/andersnormal/pkg)](https://goreportcard.com/report/github.com/andersnormal/pkg)
 [![Taylor Swift](https://img.shields.io/badge/secured%20by-taylor%20swift-brightgreen.svg)](https://twitter.com/SwiftOnSecurity)
 [![Volkswagen](https://auchenberg.github.io/volkswagen/volkswargen_ci.svg?v=1)](https://github.com/auchenberg/volkswagen)

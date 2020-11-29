@@ -16,7 +16,7 @@ import (
 type srv struct {
 }
 
-func (s *srv) Start(ctx context.Context, ready func()) func() error {
+func (s *srv) Start(ctx context.Context, ready server.ReadyFunc) func() error {
 	return func() error {
 		r := chi.NewRouter()
 		r.Use(middleware.Logger)
