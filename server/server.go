@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"sync"
+	"syscall"
 	"time"
 
 	o "github.com/andersnormal/pkg/opts"
@@ -72,11 +73,11 @@ type server struct {
 	ready chan bool
 	sys   chan os.Signal
 
-	opts *o.Opts
+	opts o.Opts
 }
 
 // WithContext ...
-func WithContext(ctx context.Context, opts ...o.Opt) (Server, context.Context) {
+func WithContext(ctx context.Context, opts ...o.OptFunc) (Server, context.Context) {
 	ctx, cancel := context.WithCancel(ctx)
 
 	// new server
@@ -87,8 +88,8 @@ func WithContext(ctx context.Context, opts ...o.Opt) (Server, context.Context) {
 	return s, ctx
 }
 
-func newServer(ctx context.Context, opts ...o.Opt) *server {
-	options := o.New(opts...)
+func newServer(ctx context.Context, opts ...o.OptFunc) *server {
+	options := o.NewDefaultOpts(opts...)
 
 	s := new(server)
 	s.opts = options
@@ -189,5 +190,7 @@ func (s *server) run(f func() error) {
 
 func configureSignals(s *server) {
 	s.sys = make(chan os.Signal, 1)
-	signal.Notify(s.sys, s.opts.TermSignal)
+	term, _ := s.opts.Get(o.TermSignal)
+
+	signal.Notify(s.sys, term.(syscall.Signal))
 }

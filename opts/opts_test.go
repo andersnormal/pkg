@@ -1,22 +1,30 @@
 package opts
 
 import (
-	"syscall"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 )
 
-func TestConfig_New(t *testing.T) {
-	o := New()
+func TestConfig_NewDefaultOpts(t *testing.T) {
+	var cond = []struct {
+		desc string
+		in   Opt
+		out  interface{}
+	}{
+		{desc: "", in: Verbose, out: false},
+	}
 
-	assert.Equal(t, o.Verbose, false)
-	assert.Equal(t, o.Env, Development)
-	assert.Equal(t, o.KillSignal, syscall.SIGINT)
-	assert.Equal(t, o.ReloadSignal, syscall.SIGHUP)
-	assert.Equal(t, o.TermSignal, syscall.SIGTERM)
-	assert.Nil(t, o.Logger)
+	for _, tt := range cond {
+		t.Run(tt.desc, func(t *testing.T) {
+			o := NewDefaultOpts()
+
+			v, err := o.Get(tt.in)
+			assert.NoError(t, err)
+			assert.Equal(t, tt.out, v)
+		})
+	}
 }
 
 func TestConfig_WithLogger(t *testing.T) {
@@ -25,10 +33,7 @@ func TestConfig_WithLogger(t *testing.T) {
 	assert.NoError(t, err)
 
 	o := New(WithLogger(logger))
-	assert.NotNil(t, o.Logger)
-}
-
-func TestConfig_WithName(t *testing.T) {
-	o := New(WithEnv(Env("fooBar")))
-	assert.Equal(t, o.Env, Env("fooBar"))
+	v, err := o.Get(Logger)
+	assert.NoError(t, err)
+	assert.NotNil(t, v)
 }

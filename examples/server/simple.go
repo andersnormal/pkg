@@ -10,6 +10,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 
+	"github.com/andersnormal/pkg/debug"
 	"github.com/andersnormal/pkg/server"
 )
 
@@ -42,9 +43,9 @@ func main() {
 
 	s, _ := server.WithContext(ctx)
 
-	d := server.NewDebugListener(
-		server.WithPprof(),
-		server.WithStatusAddr(":8443"),
+	d := debug.New(
+		debug.WithPprof(),
+		debug.WithStatusAddr(":8443"),
 	)
 	s.Listen(d, false)
 	s.Listen(&srv{}, true)
