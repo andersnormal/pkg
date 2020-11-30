@@ -15,8 +15,6 @@ type debug struct {
 	opts    DebugOpts
 	mux     *http.ServeMux
 	handler *http.Server
-
-	routes map[string]http.Handler
 }
 
 const (
