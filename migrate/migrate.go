@@ -14,8 +14,7 @@ import (
 type SqlxMigrate struct {
 	Migrations []SqlxMigration
 
-	rw   sync.Mutex
-	once sync.Once
+	rw sync.Mutex
 }
 
 // New ...
@@ -70,6 +69,39 @@ func (s *SqlxMigrate) Run(db *sqlx.DB, steps int) (int, error) {
 	return version, nil
 }
 
+// Rollback ...
+func (s *SqlxMigrate) Rollback(db *sqlx.DB) error {
+	s.rw.Lock()
+	defer s.rw.Unlock()
+
+	err := s.createMigrationTable(db)
+	if err != nil {
+		return err
+	}
+
+	for _, m := range s.Migrations {
+		if m.Down == nil {
+			continue
+		}
+
+		found, err := s.selectVersion(db, m.id)
+		if err != nil {
+			return err
+		}
+
+		if !found && err != nil {
+			continue
+		}
+
+		err = s.rollback(db, m)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (s *SqlxMigrate) rollback(db *sqlx.DB, m SqlxMigration) error {
 	errorf := func(err error) error { return fmt.Errorf("running rollback: %w", err) }
 
@@ -80,7 +112,7 @@ func (s *SqlxMigrate) rollback(db *sqlx.DB, m SqlxMigration) error {
 
 	err = m.Down(tx)
 	if err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return errorf(err)
 	}
 
@@ -102,14 +134,16 @@ func (s *SqlxMigrate) migrate(db *sqlx.DB, m SqlxMigration) error {
 
 	err = s.insertVersion(db, m.id)
 	if err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return errorf(err)
 	}
+
 	err = m.Up(tx)
 	if err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return errorf(err)
 	}
+
 	err = tx.Commit()
 	if err != nil {
 		return errorf(err)
