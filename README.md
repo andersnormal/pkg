@@ -12,6 +12,13 @@ A collection of Go primitives used in some of ours applications.
 
 You can find the documentation hosted on [godoc.org](https://godoc.org/github.com/andersnormal/pkg).
 
+## Packages
+
+* [Migrate](https://github.com/andersnormal/pkg/tree/main/migrate): Run migrations
+* [Opts](https://github.com/andersnormal/pkg/tree/main/opts): Create options
+* [Server](https://github.com/andersnormal/pkg/tree/main/server): Create servers
+* [Debug](https://github.com/andersnormal/pkg/tree/main/debug): Add debugging
+
 ## Install
 
 ```
