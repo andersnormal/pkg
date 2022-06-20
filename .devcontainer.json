@@ -1,6 +1,7 @@
 {
     "name": "andersnormal/pkg",
-    "image": "mcr.microsoft.com/vscode/devcontainers/universal:linux",
+    "image": "mcr.microsoft.com/vscode/devcontainers/go:latest",
+    "postCreateCommand": "bash scripts/postCreateCommand.sh",
     "forwardPorts": [
         8080
     ],
@@ -14,5 +15,5 @@
     },
     "extensions": [
         "golang.Go"
-    ],
+    ]
 }

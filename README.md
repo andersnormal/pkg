@@ -18,6 +18,7 @@ You can find the documentation hosted on [godoc.org](https://godoc.org/github.co
 * [Opts](https://github.com/andersnormal/pkg/tree/main/opts): Create options
 * [Server](https://github.com/andersnormal/pkg/tree/main/server): Create servers
 * [Debug](https://github.com/andersnormal/pkg/tree/main/debug): Add debugging
+* [URN](https://github.com/andersnormal/pkg/tree/main/urn): Add uniform resource name(s) (URNs)
 
 ## Install
 

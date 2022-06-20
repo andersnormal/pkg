@@ -10,4 +10,5 @@ require (
 	github.com/stretchr/testify v1.4.0
 	go.uber.org/zap v1.16.0
 	golang.org/x/net v0.0.0-20200813134508-3edf25e44fcc // indirect
+	google.golang.org/protobuf v1.28.0
 )
