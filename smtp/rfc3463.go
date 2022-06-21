@@ -1,5 +1,7 @@
 package smtp
 
+import "fmt"
+
 // EnhancedStatusCodeClass represents a class of enhanced status codes.
 type EnhancedStatusCodeClass int
 
@@ -12,6 +14,11 @@ type EnhancedStatusCodeDetail int
 // EnhancedStatusCode is a data structure to contain enhanced
 // mail system status codes from RFC 3463 (https://datatracker.ietf.org/doc/html/rfc3463).
 type EnhancedStatusCode [3]int
+
+// String returns the string representation of the enhanced status code.
+func (e *EnhancedMailSystemStatusCode) String() string {
+	return fmt.Sprintf("%v.%v.%v", e[0], e[1], e[2])
+}
 
 const (
 	// Signals a positive delivery action.
