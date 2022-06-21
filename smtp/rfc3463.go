@@ -16,7 +16,7 @@ type EnhancedStatusCodeDetail int
 type EnhancedStatusCode [3]int
 
 // String returns the string representation of the enhanced status code.
-func (e *EnhancedStatusCode) String() string {
+func (e EnhancedStatusCode) String() string {
 	return fmt.Sprintf("%v.%v.%v", e[0], e[1], e[2])
 }
 
