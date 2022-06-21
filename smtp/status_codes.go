@@ -11,6 +11,26 @@ type StatusCode struct {
 	message      string
 }
 
+// ReplyCode ...
+func (s *StatusCode) ReplyCode() int {
+	return s.replyCode
+}
+
+// EnhancedStatusCode ...
+func (s *StatusCode) EnhancedStatusCode() EnhancedStatusCode {
+	return s.enhancedCode
+}
+
+// Message ...
+func (s *StatusCode) Message() string {
+	return s.message
+}
+
+// Error ...
+func (s *StatusCode) Error() string {
+	return s.message
+}
+
 // SMTPError ...
 type SMTPError struct {
 	statusCode StatusCode
@@ -19,6 +39,10 @@ type SMTPError struct {
 // Error ...
 func (e *SMTPError) Error() string {
 	return e.statusCode.message
+}
+
+func (e *SMTPError) Temporary() bool {
+	return e.statusCode.replyCode/100 == 4
 }
 
 // NewStatusCode ...
