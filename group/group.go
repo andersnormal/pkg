@@ -9,13 +9,12 @@ import (
 // It mimics 'errgroup' to extend structs with functions to run concurrently with
 // a root context.
 type GroupRun struct {
-	wg sync.WaitGroup
-
-	errOnce sync.Once
-	err     error
+	wg  sync.WaitGroup
+	err *Error
+	sync.Mutex
 }
 
-// ResolverFunc ...
+// GroupFunc ...
 type GroupFunc func(ctx context.Context) error
 
 // Run is creating a new go routine to run a function concurrently.
@@ -27,9 +26,9 @@ func (g *GroupRun) Run(ctx context.Context, fn GroupFunc) {
 
 		err := fn(ctx)
 		if err != nil {
-			g.errOnce.Do(func() {
-				g.err = err
-			})
+			g.Lock()
+			g.err = Append(g.err, err)
+			g.Unlock()
 		}
 	}()
 }
@@ -37,6 +36,8 @@ func (g *GroupRun) Run(ctx context.Context, fn GroupFunc) {
 // Wait is waiting for all go routines to finish.
 func (g *GroupRun) Wait() error {
 	g.wg.Wait()
+	g.Lock()
+	defer g.Unlock()
 
 	return g.err
 }
