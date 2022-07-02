@@ -1,0 +1,32 @@
+package utils
+
+import (
+	"os"
+	"strings"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestFileExists(t *testing.T) {
+	tempDir, err := os.MkdirTemp(os.TempDir(), "empty_test")
+	assert.NoError(t, err)
+
+	defer func() { _ = os.RemoveAll(tempDir) }()
+
+	path := strings.Join([]string{tempDir, "example.txt"}, "/")
+	f, err := os.Create(path)
+	assert.NoError(t, err)
+	f.Close()
+
+	ok, err := FileExists(path)
+	assert.NoError(t, err)
+	assert.Equal(t, true, ok)
+
+	err = os.Remove(path)
+	assert.NoError(t, err)
+
+	ok, err = FileExists(path)
+	assert.Error(t, err)
+	assert.Equal(t, false, ok)
+}
