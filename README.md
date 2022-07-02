@@ -19,12 +19,14 @@ You can find the documentation hosted on [godoc.org](https://godoc.org/github.co
 * [Server](https://github.com/andersnormal/pkg/tree/main/server): Create servers
 * [Debug](https://github.com/andersnormal/pkg/tree/main/debug): Add debugging
 * [URN](https://github.com/andersnormal/pkg/tree/main/urn): Add uniform resource name(s) (URNs)
+* [Utils](https://github.com/andersnormal/pkg/tree/main/utils): Small helper functions
 
 ## Install
 
-```
+```bash
 go get github.com/andersnormal/pkg
 ```
 
 ## License
+
 [Apache 2.0](/LICENSE)
