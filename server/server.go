@@ -16,20 +16,20 @@ import (
 // that it is ready and the next Listener can be called.
 type ReadyFunc func()
 
-// ServerError ...
-type ServerError struct {
+// Error ...
+type Error struct {
 	Err error
 }
 
 // Error ...
-func (s *ServerError) Error() string { return fmt.Sprintf("server error: %s", s.Err) }
+func (s *Error) Error() string { return fmt.Sprintf("server error: %s", s.Err) }
 
 // Unwrap ...
-func (s *ServerError) Unwrap() error { return s.Err }
+func (s *Error) Unwrap() error { return s.Err }
 
-// NewServerError ...
-func NewServerError(err error) *ServerError {
-	return &ServerError{Err: err}
+// NewError ...
+func NewError(err error) *Error {
+	return &Error{Err: err}
 }
 
 // Server is the interface to be implemented
@@ -161,7 +161,7 @@ OUTTER:
 			s.cancel()
 		case <-s.ctx.Done():
 			if err := s.ctx.Err(); err != nil {
-				return NewServerError(s.err)
+				return NewError(s.err)
 			}
 
 			return nil

@@ -52,7 +52,7 @@ func main() {
 
 	err := s.Wait()
 
-	var e *server.ServerError
+	var e *server.Error
 	if errors.As(err, &e) {
 		fmt.Println(e.Err)
 		os.Exit(1)

@@ -12,7 +12,7 @@ import (
 var _ server.Listener = (*debug)(nil)
 
 type debug struct {
-	opts    DebugOpts
+	opts    Opts
 	mux     *http.ServeMux
 	handler *http.Server
 }
@@ -25,12 +25,12 @@ const (
 )
 
 // DebugOptions are the options for the debug listener.
-type DebugOptions struct {
+type Options struct {
 	o.Options
 }
 
-// DebugOpts are the options for the debug listener
-type DebugOpts interface {
+// Opts are the options for the debug listener
+type Opts interface {
 	// Addr ...
 	Addr() string
 	// Routes ...
@@ -39,28 +39,28 @@ type DebugOpts interface {
 	o.Opts
 }
 
-// NewDebugOpts returns a new instance of the debug options.
-func NewDebugOpts(opts ...o.OptFunc) DebugOpts {
+// NewOpts returns a new instance of the debug options.
+func NewOpts(opts ...o.OptFunc) Opts {
 	opts = append([]o.OptFunc{func(opts o.Opts) {
 		opts.Set(Addr, ":8443")
 		opts.Set(Routes, make(map[string]http.Handler))
 	}}, opts...)
 
-	oo := new(DebugOptions)
+	oo := new(Options)
 	oo.Configure(opts...)
 
 	return oo
 }
 
 // Addr ...
-func (o *DebugOptions) Addr() string {
+func (o *Options) Addr() string {
 	v, _ := o.Get(Addr)
 
 	return v.(string)
 }
 
 // Addr ...
-func (o *DebugOptions) Routes() map[string]http.Handler {
+func (o *Options) Routes() map[string]http.Handler {
 	v, _ := o.Get(Routes)
 
 	return v.(map[string]http.Handler)
@@ -68,7 +68,7 @@ func (o *DebugOptions) Routes() map[string]http.Handler {
 
 // New ...
 func New(opts ...o.OptFunc) server.Listener {
-	options := NewDebugOpts(opts...)
+	options := NewOpts(opts...)
 
 	d := new(debug)
 	d.opts = options
