@@ -31,17 +31,17 @@ func (s *StatusCode) Error() string {
 	return s.message
 }
 
-// SMTPError ...
-type SMTPError struct {
+// Error ...
+type Error struct {
 	statusCode StatusCode
 }
 
 // Error ...
-func (e *SMTPError) Error() string {
+func (e *Error) Error() string {
 	return e.statusCode.message
 }
 
-func (e *SMTPError) Temporary() bool {
+func (e *Error) Temporary() bool {
 	return e.statusCode.replyCode/100 == 4
 }
 
@@ -54,9 +54,9 @@ func (s *StatusCode) NewStatusCode(replyCode int, enhancedCode EnhancedStatusCod
 	}
 }
 
-// Error ...
-func Error(replyCode int, enhancedCode EnhancedStatusCode, message string) error {
-	return &SMTPError{
+// ErrorFromStatus ...
+func ErrorFromStatus(replyCode int, enhancedCode EnhancedStatusCode, message string) error {
+	return &Error{
 		statusCode: StatusCode{
 			replyCode:    replyCode,
 			enhancedCode: enhancedCode,

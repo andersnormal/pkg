@@ -8,7 +8,7 @@ var (
 	// ErrMissingCanonical signals that the canonical representation of the ResourceURN is missing
 	ErrMissingCanonical = errors.New("urn: the URN is missing the canonical representation")
 	// ErrInvalidCanonical  signals that the canonical representation  is invalid
-	ErrInvalidCanonical = errors.New("urn: the canonical representaion is invalid")
+	ErrInvalidCanonical = errors.New("urn: the canonical representation is invalid")
 	// ErrMissingNamespace signals that the namespace of the ResourceURN is missing
 	ErrMissingNamespace = errors.New("urn: the URN is missing a namespace")
 	// ErrMissingCollection signals that the collection of the ResourceURN is missing
