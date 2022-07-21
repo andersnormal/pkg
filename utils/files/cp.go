@@ -11,7 +11,7 @@ import (
 )
 
 // CopyFile ...
-func CopyFile(src, dst string) (int64, error) {
+func CopyFile(src, dst string, mkdir bool) (int64, error) {
 	src, err := AbsolutePath(src)
 	if err != nil {
 		return 0, err
@@ -20,6 +20,13 @@ func CopyFile(src, dst string) (int64, error) {
 	dst, err = AbsolutePath(dst)
 	if err != nil {
 		return 0, err
+	}
+
+	if mkdir {
+		err = MkdirAll(filepath.Dir(dst), 0755)
+		if err != nil {
+			return 0, err
+		}
 	}
 
 	return copy(src, dst)
