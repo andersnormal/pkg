@@ -34,12 +34,37 @@ func CopyFile(src, dst string, mkdir bool) (int64, error) {
 
 // AbsolutePath ...
 func AbsolutePath(path string) (string, error) {
-	path, err := replaceHomeFolder(path)
+	path, err := ExpandHomeFolder(path)
 	if err != nil {
 		return "", err
 	}
 
 	return filepath.Abs(path)
+}
+
+// ExpandHomeFolder ...
+func ExpandHomeFolder(path string) (string, error) {
+	if !strings.HasPrefix(path, "~") {
+		return path, nil
+	}
+
+	var buffer bytes.Buffer
+	usr, err := user.Current()
+	if err != nil {
+		return "", err
+	}
+
+	_, err = buffer.WriteString(usr.HomeDir)
+	if err != nil {
+		return "", err
+	}
+
+	_, err = buffer.WriteString(strings.TrimPrefix(path, "~"))
+	if err != nil {
+		return "", err
+	}
+
+	return buffer.String(), nil
 }
 
 func copy(src, dst string) (int64, error) {
@@ -67,28 +92,4 @@ func copy(src, dst string) (int64, error) {
 	n, err := io.Copy(destination, source)
 
 	return n, err
-}
-
-func replaceHomeFolder(path string) (string, error) {
-	if !strings.HasPrefix(path, "~") {
-		return path, nil
-	}
-
-	var buffer bytes.Buffer
-	usr, err := user.Current()
-	if err != nil {
-		return "", err
-	}
-
-	_, err = buffer.WriteString(usr.HomeDir)
-	if err != nil {
-		return "", err
-	}
-
-	_, err = buffer.WriteString(strings.TrimPrefix(path, "~"))
-	if err != nil {
-		return "", err
-	}
-
-	return buffer.String(), nil
 }
