@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/andersnormal/pkg/utils/strings"
+
 	"github.com/stretchr/testify/assert"
 )
 
