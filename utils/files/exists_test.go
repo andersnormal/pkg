@@ -14,12 +14,16 @@ func TestFileExists(t *testing.T) {
 
 	defer func() { _ = os.RemoveAll(tempDir) }()
 
+	ok, err := FileExists(tempDir)
+	assert.NoError(t, err)
+	assert.Equal(t, true, ok)
+
 	path := strings.Join([]string{tempDir, "example.txt"}, "/")
 	f, err := os.Create(path)
 	assert.NoError(t, err)
 	f.Close()
 
-	ok, err := FileExists(path)
+	ok, err = FileExists(path)
 	assert.NoError(t, err)
 	assert.Equal(t, true, ok)
 
@@ -49,6 +53,11 @@ func TestFileNotExists(t *testing.T) {
 	err = os.Remove(path)
 	assert.NoError(t, err)
 
+	ok, err = FileNotExists(path)
+	assert.NoError(t, err)
+	assert.Equal(t, true, ok)
+
+	path = strings.Join([]string{tempDir, "demo123"}, "/")
 	ok, err = FileNotExists(path)
 	assert.NoError(t, err)
 	assert.Equal(t, true, ok)
