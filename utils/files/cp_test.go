@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/user"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -98,4 +99,30 @@ func TestCopyFileMkdir(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, "Hello World", string(b))
+}
+
+func TestPrependHomeFolder(t *testing.T) {
+	sr, err := user.Current()
+	assert.NoError(t, err)
+
+	var tests = []struct {
+		desc        string
+		path        string
+		expected    string
+		expectedErr error
+	}{
+		{
+			path:        "csync/.nanorc",
+			expected:    filepath.Join(sr.HomeDir, "csync/.nanorc"),
+			expectedErr: nil,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.desc, func(t *testing.T) {
+			p, err := files.PrependHomeFolder(tc.path)
+			assert.NoError(t, err)
+			assert.Equal(t, tc.expected, p)
+		})
+	}
 }

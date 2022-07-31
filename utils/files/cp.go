@@ -67,6 +67,44 @@ func ExpandHomeFolder(path string) (string, error) {
 	return buffer.String(), nil
 }
 
+// PrependHomeFolder ...
+func PrependHomeFolder(path string) (string, error) {
+	if strings.HasPrefix(path, string(os.PathSeparator)) {
+		return path, nil
+	}
+
+	var buffer bytes.Buffer
+	usr, err := user.Current()
+	if err != nil {
+		return "", err
+	}
+
+	_, err = buffer.WriteString(filepath.Join(usr.HomeDir, filepath.Clean(path)))
+	if err != nil {
+		return "", err
+	}
+
+	return buffer.String(), nil
+}
+
+// Transformer ...
+type Transformer func(path string) (string, error)
+
+// PathTransform ...
+func PathTransform(path string, funcs ...Transformer) (string, error) {
+	p := path
+
+	var err error
+	for _, fn := range funcs {
+		p, err = fn(path)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	return p, nil
+}
+
 func copy(src, dst string) (int64, error) {
 	sfi, err := os.Stat(src)
 	if err != nil {
