@@ -1,3 +1,5 @@
+:warning: This repo has been moved [https://github.com/katallaxie/pkg](https://github.com/katallaxie/pkg)
+
 # Pkg
 
 ![Github Action](https://github.com/andersnormal/pkg/workflows/main/badge.svg)
